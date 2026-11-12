@@ -1,0 +1,19 @@
+{
+  "source": "https://github.com/LaoZhong-Mihari/codex-organic-chem",
+  "archive_sha256": "d2e3002b1f3aad0227957df5c7dc98768542c0be57a333491411b32a3e7ddaf7",
+  "zip_comment_commit": "703998db2ef5901e9b04d85fe4819d12f9596039",
+  "modules": [
+    "figure_audit",
+    "figure_style",
+    "figure_tools",
+    "mechanism_canvas",
+    "mechanism_scene",
+    "mechanism_semantics",
+    "models",
+    "rdkit_tools"
+  ],
+  "changes": "Only selected mechanism modules copied. Package __init__ replaced to avoid loading unrelated services. No third-party editor assets included.",
+  "upstream_python_requirement": ">=3.12,<3.13",
+  "local_validation_python": "3.14; this is a source subset, not installation of the upstream distribution.",
+  "reference_changes": "The copied mechanism-spec.md has two local documentation links adapted to the packaged examples and workflow."
+}

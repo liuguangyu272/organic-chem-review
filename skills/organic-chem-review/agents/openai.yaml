@@ -1,0 +1,4 @@
+interface:
+  display_name: "有机化学复习搭子"
+  short_description: "按 PPT 顺序复习有机化学，代码生成结构与分步机理，配合互动问答和错题重练"
+  default_prompt: "用 $organic-chem-review 按我上传的 PPT 原顺序讲解，代码生成结构式和分步机理，在当前页穿插一道问答，先不展示答案。"
