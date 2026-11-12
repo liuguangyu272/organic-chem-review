@@ -1,6 +1,6 @@
 ---
 name: organic-chem-review
-description: Slide-ordered undergraduate organic chemistry review with RDKit structures, explicit mechanisms and active recall. 按 PPT 顺序进行本科有机化学复习，结合逐题问答、错题变式重练和代码生成结构式。用于课件讲解、反应机理、产物预测、立体化学、合成与波谱题；附 RDKit 结构生成和显式分步机理检查、弯箭渲染工具。适合 ChatGPT Work。不用于实验操作规程或一般无机、物化复习。
+description: "Organic chemistry review for Work skills and ordinary Chat session attachments: PPT order, active recall, RDKit structures and explicit mechanisms. 按 PPT 顺序进行本科有机化学复习，逐题问答和错题变式重练；先核对本次会话工具能力，再代码生成结构与机理图。支持 Work 技能及普通 Chat 附件入口，不自动同步本机依赖。不用于实验操作规程。"
 ---
 
 # 有机化学复习搭子
@@ -9,6 +9,7 @@ description: Slide-ordered undergraduate organic chemistry review with RDKit str
 
 ## 开始与范围
 
+- 首次进入本次学习会话，先读取 [references/session-start.md](references/session-start.md)，确认当前实际加载方式与工具能力。Work 原生技能与普通 Chat 附件入口共享教学规则；不要以“已安装”代替“本次聊天已读取并能执行”。
 - 这是复习与机理增强版：保留互动复习，增强代码结构与分步机理工具，并默认按 PPT 原顺序讲解。已有 PPT 时读取 [references/ppt-order.md](references/ppt-order.md)；没有 PPT 仍可独立练习，不编造页码或声称已读取课件。
 - 运行工具前按 [references/tool-runtime.md](references/tool-runtime.md) 选择当前环境可用的 Python，不假设任意 Work 会话已经安装本地依赖。
 - 优先使用本次聊天已有的章节、讲义、题目和考试范围。资料没有给出时，按常见本科有机化学深度开始，不猜教材版本或教师考点。
@@ -73,7 +74,7 @@ description: Slide-ordered undergraduate organic chemistry review with RDKit str
 - 波谱题结合分子式、不饱和度、积分、裂分、化学位移和 IR/MS 等已给证据交叉验证。n+1 规则只用于合适的一阶近似，不强套在所有氢上。
 - 多解时列最少的关键候选及能区分它们的数据，不伪造缺失峰。数值、特殊反应或争议机理有不确定性时，核查可靠教材、原始论文或官方专业来源并标注出处；无检索条件就明确不确定部分。
 
-## 结构与 Work 展示：默认代码生成
+## 结构与当前客户端展示：默认代码生成
 
 - 在产物预测、异构体比较、机理、合成和结构辨析中，主动生成与当前问题直接相关的结构式；简单事实不硬加图，同一结构可复用。默认用“结构编码 → 化学工具校验 → 程序渲染”，不依赖手工摆线或 AI 图片生成。
 - 涉及结构生成时读取 [references/structure-generation.md](references/structure-generation.md)，按任务选择 SMILES、MOL/SDF、RDKit、RDKit.js、Chemfig 或受支持的 ChemDraw 工作流。普通二维骨架式首选 SMILES + RDKit，使用附带的 [scripts/render_structures.py](scripts/render_structures.py) 生成 SVG 和 PNG。

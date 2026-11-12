@@ -16,7 +16,20 @@
 - **结构生成**：SMILES → RDKit 校验 → SVG/PNG，保留电荷和已指定的立体信息。
 - **显式分步机理**：根据已给出的中间体与原子映射，检查电子流、键级、电荷和守恒，再渲染弯箭。
 
-## 安装
+## 普通 Chat：会话附件入口
+
+从 [Release](https://github.com/liuguangyu272/organic-chem-review/releases/latest) 下载 **`CHAT_START.md` 和 `organic-chem-review-chat-v1.1.0.zip`**，与 PPT 一起上传到普通 Chat，发送：
+
+```text
+按 CHAT_START.md 开始，从我指定的 PPT 页开始。
+先确认本次会话实际能否运行结构工具；讲一个知识点后只问一道题，等我回复。
+```
+
+启动文件本身包含页序、问答和纠错约定；ZIP 提供完整规则与脚本。能执行 Python 时，应读取、解压并运行启动检查，再生成结构和机理；本次会话不能执行时，会明确告知限制，保留讲解/问答能力。附件不会替你开启平台权限，也不等于安装进 ChatGPT 账户。ZIP 不受当前上传入口支持时，先使用独立启动文件并按工具实际能力处理。
+
+这不是要求你切换 Work：**Chat 与 Work 共用教学流程，化学工具依据各自当次环境检查。** 当前发布验证了附件解压后脚本可运行、缺依赖时正确报缺项；尚未在用户的真实普通 Chat 会话中完成端到端验收。[启动文件](chat/CHAT_START.md) · [会话检查约定](skills/organic-chem-review/references/session-start.md)
+
+## Work / 原生技能安装
 
 通过 [Skills CLI](https://github.com/vercel-labs/skills) 安装；需要 Node.js 22.20 或更新版本：
 
@@ -46,6 +59,8 @@ npx skills add liuguangyu272/organic-chem-review --skill organic-chem-review
 
 也可以直接说：“比较 SN1 和 SN2，先解释我错在哪里，再出一道条件变化题。”课件与作答留在你所用助手的会话中，本项目不提供数据收集服务器。
 
+首次在新工具环境开始时运行 `scripts/session_probe.py`，实际生成一张结构图并保存 `session-check.json`，不以“技能已安装”替代本次会话检查。默认一次只讲当前页的一个知识点，再问一道题并等待；只有用户明确要求时才改为跨页长讲或批量测验。
+
 ## 运行化学工具
 
 教学规则不要求你会写代码；结构和机理脚本需要可执行 Python 的环境。在仓库根目录创建独立环境：
@@ -62,6 +77,7 @@ python -m venv .venv
 
 ```bash
 python skills/organic-chem-review/scripts/render_structures.py --smiles "CC(=O)O" --label "A" --output work/acetic-acid
+python skills/organic-chem-review/scripts/session_probe.py --output work/session-check
 python skills/organic-chem-review/scripts/mechanism_tools.py --example sn2 --output work/sn2
 python skills/organic-chem-review/scripts/mechanism_tools.py --example carbonyl_addition --output work/addition --png
 ```
@@ -78,6 +94,7 @@ python skills/organic-chem-review/scripts/mechanism_tools.py --example carbonyl_
 - 5 类教学机理示例：SN2、质子转移、羰基加成后质子化、E2、成对均裂。
 - 7 类错误机理被拦截，以及规格、追踪记录与摘要的往返一致性。
 - SN2 与两步羰基加成生成的 PNG 已目视检查。
+- v1.1 增加真实启动检查、缺依赖报告、Chat 附件解压后的独立运行检查。脚本检查不能代替模型是否在实际聊天中遵守教学约定的验收。
 
 运行可复现的软件检查：
 

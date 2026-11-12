@@ -8,7 +8,15 @@ An undergraduate organic chemistry Agent Skill combining **slide-ordered tutorin
 
 The mechanism core is an MIT-licensed source subset from [LaoZhong-Mihari/codex-organic-chem](https://github.com/LaoZhong-Mihari/codex-organic-chem). This project adds the learning workflow, slide-order guidance, structure-rendering helper, portable packaging and regression checks. [Attribution](THIRD_PARTY_NOTICES.md)
 
-## Install
+## Ordinary Chat: session attachments
+
+Download `CHAT_START.md` and `organic-chem-review-chat-v1.1.0.zip` from the latest release. Attach both and your slides, then explicitly ask the assistant to follow `CHAT_START.md`. Ask for English if preferred.
+
+The standalone document provides slide order, feedback and one-question-at-a-time review. If that chat can execute Python, it should extract the archive, load the full instructions and run `session_probe.py` before claiming working chemistry tools. Without execution or dependencies, it must disclose that limitation and can still provide the tutoring workflow. Uploading files does not enable tools, install an account-wide skill, or synchronize a local environment. If the upload surface rejects ZIPs, use the standalone instructions and the capabilities actually present.
+
+Local tests cover extracting the attachment package, executing its probe and accurately reporting missing dependencies. An actual end-to-end run inside the user's ordinary Chat session is **not** established by those tests.
+
+## Work / native skill installation
 
 With [Skills CLI](https://github.com/vercel-labs/skills), using Node.js 22.20 or newer:
 
@@ -38,6 +46,8 @@ Do not reveal the answer until I attempt it or ask for it.
 
 The skill tracks the current slide in the conversation, inserts only necessary prerequisites, corrects factual errors, and tests a changed condition after an error. It does not assume cross-chat memory. There is no project-operated collection server; your host handles your attachments and conversations.
 
+New runtime environments must run the actual probe, not infer tool access from an installed skill. Default pacing is one concept on the current slide and one question before waiting for the learner. User requests for longer explanations or batch tests override this default.
+
 ## Chemistry tools
 
 Use a dedicated Python environment and install RDKit:
@@ -47,6 +57,7 @@ python -m venv .venv
 # Use .venv/Scripts/python on Windows or .venv/bin/python on macOS/Linux:
 python -m pip install -r skills/organic-chem-review/scripts/requirements.txt
 python skills/organic-chem-review/scripts/render_structures.py --smiles "CC(=O)O" --label "A" --output work/acid
+python skills/organic-chem-review/scripts/session_probe.py --output work/session-check
 python skills/organic-chem-review/scripts/mechanism_tools.py --example sn2 --output work/sn2
 ```
 

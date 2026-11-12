@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import zipfile
 import xml.etree.ElementTree as ET
 
 from PIL import Image
@@ -23,6 +24,44 @@ def run_script(name, *args):
 
 
 class ChemistryChecks(unittest.TestCase):
+    def test_session_probe_actually_renders(self):
+        with tempfile.TemporaryDirectory() as directory:
+            result = run_script('session_probe.py', '--output', directory)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            summary = json.loads(result.stdout)
+            self.assertEqual(summary['status'], 'structure_rendering_verified')
+            report = json.loads((Path(directory) / 'session-check.json').read_text(encoding='utf-8'))
+            self.assertEqual(len(report['generated_files']), 3)
+            for path in report['generated_files']:
+                self.assertTrue(Path(path).is_file())
+
+    def test_session_probe_reports_missing_dependencies(self):
+        with tempfile.TemporaryDirectory() as directory:
+            result = subprocess.run([sys.executable, '-S', str(SKILL / 'scripts/session_probe.py'),
+                                     '--output', directory], capture_output=True, text=True, encoding='utf-8')
+            self.assertEqual(result.returncode, 2, result.stderr)
+            summary = json.loads(result.stdout)
+            self.assertEqual(summary['status'], 'dependencies_unavailable')
+            self.assertEqual(summary['files'], [])
+
+    def test_attachment_package_runs_after_extraction(self):
+        built = subprocess.run([sys.executable, str(ROOT / 'scripts/build_release.py')], capture_output=True)
+        self.assertEqual(built.returncode, 0, built.stderr)
+        with tempfile.TemporaryDirectory() as directory:
+            folder = Path(directory)
+            archive = ROOT / 'dist/organic-chem-review-chat-v1.1.0.zip'
+            with zipfile.ZipFile(archive) as z:
+                for name in z.namelist():
+                    self.assertFalse(Path(name).is_absolute())
+                    self.assertNotIn('..', Path(name).parts)
+                z.extractall(folder)
+            self.assertTrue((folder / 'CHAT_START.md').is_file())
+            command = [sys.executable, str(folder / 'organic-chem-review/scripts/session_probe.py'),
+                       '--output', str(folder / 'runtime-check')]
+            result = subprocess.run(command, cwd=folder, capture_output=True, text=True, encoding='utf-8')
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(json.loads(result.stdout)['status'], 'structure_rendering_verified')
+
     def test_structures_preserve_charge_and_stereo(self):
         with tempfile.TemporaryDirectory() as directory:
             prefix = Path(directory) / 'structures'
