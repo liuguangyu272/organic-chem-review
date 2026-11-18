@@ -24,6 +24,52 @@ def run_script(name, *args):
 
 
 class ChemistryChecks(unittest.TestCase):
+    def test_mapped_annotations_preserve_structure_and_reject_missing_bonds(self):
+        with tempfile.TemporaryDirectory() as directory:
+            folder = Path(directory)
+            entry = {'smiles': '[CH3:1][CH:2]=[O:3]', 'label': 'A',
+                     'atom_notes': {'2': 'E'}, 'highlight_atom_maps': [2],
+                     'highlight_bonds': [[2, 3]]}
+            source = folder / 'input.json'
+            source.write_text(json.dumps([entry]), encoding='utf-8')
+            result = run_script('render_structures.py', '--input', source, '--output', folder / 'marked')
+            self.assertEqual(result.returncode, 0, result.stderr)
+            marked = (folder / 'marked.png').read_bytes()
+            mol = json.loads((folder / 'marked.json').read_text(encoding='utf-8'))['molecules'][0]
+            self.assertEqual(mol['formula'], 'C2H4O')
+            self.assertEqual(mol['formal_charge'], 0)
+            plain = run_script('render_structures.py', '--smiles', 'CC=O', '--label', 'A', '--output', folder / 'plain')
+            self.assertEqual(plain.returncode, 0, plain.stderr)
+            self.assertNotEqual(marked, (folder / 'plain.png').read_bytes())
+            for invalid_bond in ([1, 3], [2, 99]):
+                entry['highlight_bonds'] = [invalid_bond]
+                source.write_text(json.dumps([entry]), encoding='utf-8')
+                bad = run_script('render_structures.py', '--input', source, '--output', folder / 'bad')
+                self.assertNotEqual(bad.returncode, 0)
+                self.assertFalse((folder / 'bad.png').exists())
+
+    def test_teaching_annotations_are_drawn_and_future_steps_hidden(self):
+        with tempfile.TemporaryDirectory() as directory:
+            folder = Path(directory)
+            result = run_script('mechanism_tools.py', '--example', 'carbonyl_addition',
+                                '--panel', '1', '--output', folder / 'step')
+            self.assertEqual(result.returncode, 0, result.stderr)
+            svg = ET.parse(folder / 'step.svg').getroot()
+            ns = {'s': 'http://www.w3.org/2000/svg'}
+            labels = [node.text or '' for node in svg.findall('.//s:text', ns)]
+            # These must be visible SVG objects, not only metadata/configuration.
+            self.assertTrue(any('亲核' in value for value in labels))
+            self.assertTrue(any('①' in value for value in labels))
+            self.assertIn('δ+', labels)
+            arrows = [n for n in svg.findall('.//s:path', ns) if n.get('class') == 'mech-arrow']
+            self.assertEqual(len(arrows), 2)
+            for arrow in arrows:
+                self.assertTrue(arrow.get('data-source-object'))
+                self.assertTrue(arrow.get('data-target-object'))
+            spec = json.loads((folder / 'step.spec.json').read_text(encoding='utf-8'))
+            self.assertEqual(len(spec['panels']), 1)
+            self.assertNotIn('2. Alkoxide', (folder / 'step.svg').read_text(encoding='utf-8'))
+
     def test_session_probe_actually_renders(self):
         with tempfile.TemporaryDirectory() as directory:
             result = run_script('session_probe.py', '--output', directory)
@@ -49,7 +95,7 @@ class ChemistryChecks(unittest.TestCase):
         self.assertEqual(built.returncode, 0, built.stderr)
         with tempfile.TemporaryDirectory() as directory:
             folder = Path(directory)
-            archive = ROOT / 'dist/organic-chem-review-chat-v1.1.0.zip'
+            archive = ROOT / 'dist/organic-chem-review-chat-v1.3.0.zip'
             with zipfile.ZipFile(archive) as z:
                 for name in z.namelist():
                     self.assertFalse(Path(name).is_absolute())

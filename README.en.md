@@ -8,9 +8,17 @@ An undergraduate organic chemistry Agent Skill combining **slide-ordered tutorin
 
 The mechanism core is an MIT-licensed source subset from [LaoZhong-Mihari/codex-organic-chem](https://github.com/LaoZhong-Mihari/codex-organic-chem). This project adds the learning workflow, slide-order guidance, structure-rendering helper, portable packaging and regression checks. [Attribution](THIRD_PARTY_NOTICES.md)
 
+## v1.3: visible structures and mechanism annotations
+
+Tutoring now requires a depiction for each newly analyzed molecular state. Teaching diagrams display anchored electron arrows, short explanations, relevant lone pairs, formal charges and justified partial charges. Mapped structure notes/highlights and single-panel reveal are supported. The compact renderer now actually draws the supplied teaching annotations.
+
+The root `plugin.json` and `skills/` also provide native plugin source. Account catalog installation does not prove script access or execution in ordinary Chat; that host still requires actual validation.
+
+![Annotated teaching mechanism](examples/carbonyl-teaching.png)
+
 ## Ordinary Chat: session attachments
 
-Download `CHAT_START.md` and `organic-chem-review-chat-v1.1.0.zip` from the latest release. Attach both and your slides, then explicitly ask the assistant to follow `CHAT_START.md`. Ask for English if preferred.
+Download `CHAT_START.md` and `organic-chem-review-chat-v1.3.0.zip` from the latest release. Attach both and your slides, then explicitly ask the assistant to follow `CHAT_START.md`. Ask for English if preferred.
 
 The standalone document provides slide order, feedback and one-question-at-a-time review. If that chat can execute Python, it should extract the archive, load the full instructions and run `session_probe.py` before claiming working chemistry tools. Without execution or dependencies, it must disclose that limitation and can still provide the tutoring workflow. Uploading files does not enable tools, install an account-wide skill, or synchronize a local environment. If the upload surface rejects ZIPs, use the standalone instructions and the capabilities actually present.
 

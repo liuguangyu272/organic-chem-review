@@ -43,7 +43,7 @@ def main():
     if not isinstance(entries, list) or not entries or len(entries) > 30:
         parser.error('Input must be a nonempty array of at most 30 molecules')
 
-    molecules, legends, audit = [], [], []
+    molecules, legends, audit, atom_highlights, bond_highlights = [], [], [], [], []
     for index, entry in enumerate(entries):
         if not isinstance(entry, dict):
             parser.error(f'Entry {index + 1} must be an object')
@@ -63,12 +63,52 @@ def main():
         chiral = Chem.FindMolChiralCenters(mol, includeUnassigned=True, useLegacyImplementation=False)
         rdCIPLabeler.AssignCIPLabels(mol)
         rdDepictor.Compute2DCoords(mol)
+        # Annotation anchors use stable positive atom maps, never guessed pixel positions.
+        mapped = {}
+        for atom in mol.GetAtoms():
+            number = atom.GetAtomMapNum()
+            if number:
+                if number in mapped:
+                    parser.error(f'Entry {index + 1}: duplicate atom map {number}')
+                mapped[number] = atom.GetIdx()
+        def atom_index(number):
+            if isinstance(number, bool) or not isinstance(number, int) or number not in mapped:
+                parser.error(f'Entry {index + 1}: annotation needs an existing positive atom map: {number}')
+            return mapped[number]
+        notes = entry.get('atom_notes', {})
+        if not isinstance(notes, dict):
+            parser.error(f'Entry {index + 1}: atom_notes must be an atom-map/text object')
+        for number, note in notes.items():
+            try:
+                number = int(number)
+            except (TypeError, ValueError):
+                parser.error(f'Entry {index + 1}: invalid atom map in atom_notes')
+            if not isinstance(note, str) or not note or len(note) > 32 or '\n' in note:
+                parser.error(f'Entry {index + 1}: atom note must be a short single line')
+            mol.GetAtomWithIdx(atom_index(number)).SetProp('atomNote', note)
+        selected_atoms = entry.get('highlight_atom_maps', [])
+        selected_bonds = entry.get('highlight_bonds', [])
+        if not isinstance(selected_atoms, list) or not isinstance(selected_bonds, list):
+            parser.error(f'Entry {index + 1}: highlights must be arrays')
+        atom_highlights.append([atom_index(n) for n in selected_atoms])
+        bond_indices = []
+        for pair in selected_bonds:
+            if not isinstance(pair, list) or len(pair) != 2:
+                parser.error(f'Entry {index + 1}: highlighted bond needs two atom maps')
+            bond = mol.GetBondBetweenAtoms(atom_index(pair[0]), atom_index(pair[1]))
+            if bond is None:
+                parser.error(f'Entry {index + 1}: highlighted bond does not exist: {pair}')
+            bond_indices.append(bond.GetIdx())
+        bond_highlights.append(bond_indices)
         audit.append({
             'label': label,
             'input_smiles': smiles,
             'isomeric_smiles': Chem.MolToSmiles(mol, isomericSmiles=True),
             'formula': rdMolDescriptors.CalcMolFormula(mol),
             'formal_charge': Chem.GetFormalCharge(mol),
+            'atom_notes': notes,
+            'highlight_atom_maps': selected_atoms,
+            'highlight_bonds': selected_bonds,
             'chiral_centers': [{'atom_index': i, 'assignment': tag} for i, tag in chiral],
             'specified_bond_stereo': [
                 {'bond_index': b.GetIdx(), 'stereo': str(b.GetStereo()),
@@ -76,6 +116,9 @@ def main():
                 for b in mol.GetBonds() if b.GetStereo() != Chem.BondStereo.STEREONONE
             ],
         })
+        # Keep mapping for the audit, remove its display clutter from the teaching image.
+        for atom in mol.GetAtoms():
+            atom.SetAtomMapNum(0)
         molecules.append(mol)
         legends.append(label)
 
@@ -89,7 +132,9 @@ def main():
     for drawer in (svg_drawer, png_drawer):
         drawer.drawOptions().addAtomIndices = args.atom_indices
         drawer.drawOptions().padding = 0.12
-        drawer.DrawMolecules(molecules, legends=legends)
+        drawer.drawOptions().annotationFontScale = 0.85
+        drawer.DrawMolecules(molecules, legends=legends, highlightAtoms=atom_highlights,
+                             highlightBonds=bond_highlights)
         drawer.FinishDrawing()
 
     prefix = args.output

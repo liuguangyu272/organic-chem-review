@@ -8,4 +8,4 @@ Windows 使用虚拟环境的 `Scripts/python.exe`，macOS/Linux 使用 `bin/pyt
 
 最初实测环境为 Windows、Python 3.14、RDKit 2026.09.2；其他环境以仓库自动检查的实际结果为准，不将其扩大成全部平台、全部旧版本均已验证。机理核心是带 MIT 许可的上游源码子集，不是安装上游正式发行包；来源和改动见 `scripts/vendor/provenance.json`。
 
-结构 PNG 由 RDKit 生成。机理的 SVG 始终是主文件；可选 PNG 预览需要本地 Edge/Chrome/Chromium，使用临时独立配置及后台进程，不读取个人浏览器资料。没有浏览器时保留 SVG，不声称 PNG 已生成。
+结构 PNG 由 RDKit 直接生成；机理工具默认同时生成 SVG 与用于聊天内显示的 PNG，先尝试已有 CairoSVG，再尝试 Edge/Chrome/Chromium 的独立临时配置，不读取个人浏览器资料、不抢占焦点。没有可用转换器时如实报告缺少 PNG，不把 SVG 代码或下载链接当成已显示图片。`--no-png` 仅用于后台批量检查；复习讲解应展示实际图片，并查看文字、弯箭、电荷与边缘是否完整。

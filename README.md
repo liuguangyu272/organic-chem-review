@@ -16,9 +16,17 @@
 - **结构生成**：SMILES → RDKit 校验 → SVG/PNG，保留电荷和已指定的立体信息。
 - **显式分步机理**：根据已给出的中间体与原子映射，检查电子流、键级、电荷和守恒，再渲染弯箭。
 
+## v1.3：结构与机理标注修正
+
+每轮分析新的分子或反应步骤时直接展示对应结构；机理图显示电子弯箭、短标签、相关孤对电子、形式电荷与必要的部分电荷。新增原子映射锚定的结构高亮和短标注；`--panel` 可只生成当前步骤，避免练习提前泄露后续答案。
+
+仓库根目录的 `plugin.json` 与 `skills/` 提供原生插件源文件。插件目录能否安装、普通 Chat 能否加载配套脚本并执行，仍由具体账户与宿主能力决定；私人目录安装成功不能证明普通 Chat 已完成验收。附件入口是可选的会话方案。
+
+![教学标注机理](examples/carbonyl-teaching.png)
+
 ## 普通 Chat：会话附件入口
 
-从 [Release](https://github.com/liuguangyu272/organic-chem-review/releases/latest) 下载 **`CHAT_START.md` 和 `organic-chem-review-chat-v1.1.0.zip`**，与 PPT 一起上传到普通 Chat，发送：
+从 [Release](https://github.com/liuguangyu272/organic-chem-review/releases/latest) 下载 **`CHAT_START.md` 和 `organic-chem-review-chat-v1.3.0.zip`**，与 PPT 一起上传到普通 Chat，发送：
 
 ```text
 按 CHAT_START.md 开始，从我指定的 PPT 页开始。

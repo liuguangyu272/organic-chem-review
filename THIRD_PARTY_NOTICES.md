@@ -14,3 +14,5 @@ The package initializer was reduced to avoid loading unrelated services. Two lin
 The examples in this repository are generated using RDKit and the included code. The electron-bookkeeping/scene engine is upstream work; it is not presented as an independently invented engine or a general reaction-discovery model.
 
 RDKit, NumPy and Pillow are runtime dependencies, installed separately under their respective upstream licenses. Optional local browsers are not redistributed.
+
+Local v1.3 modifications add teaching annotation layout (molecule roles, arrow callouts, anchored partial charges) to the upstream compact mechanism scene. The underlying chemical painter and electron bookkeeping remain attributed to the upstream project.

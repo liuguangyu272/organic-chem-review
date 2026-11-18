@@ -1,6 +1,7 @@
 """Build a portable skill ZIP and a SHA-256 checksum without local runtime data."""
 import argparse
 import hashlib
+import json
 from pathlib import Path
 import re
 import shutil
@@ -36,7 +37,15 @@ def build(version):
     write_zip(chat_archive, chat_files)
     starter = output / 'CHAT_START.md'
     shutil.copy2(root / 'chat/CHAT_START.md', starter)
-    artifacts = [archive, chat_archive, starter]
+    native_archive = output / f'organic-chem-review-plugin-v{version}.zip'
+    native_files = {'skills/' + name: path for name, path in package.items()}
+    for name in ('plugin.json', '.codex-plugin/plugin.json', 'LICENSE', 'THIRD_PARTY_NOTICES.md'):
+        native_files[name] = root / name
+    manifest_version = json.loads((root / 'plugin.json').read_text(encoding='utf-8'))['version']
+    if manifest_version != version:
+        raise ValueError('Requested release version differs from plugin manifest')
+    write_zip(native_archive, native_files)
+    artifacts = [archive, chat_archive, native_archive, starter]
     checksums = []
     for path in artifacts:
         checksums.append(f'{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.name}\n')
@@ -46,5 +55,5 @@ def build(version):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--version', default='1.1.0')
+    parser.add_argument('--version', default='1.3.0')
     build(parser.parse_args().version)

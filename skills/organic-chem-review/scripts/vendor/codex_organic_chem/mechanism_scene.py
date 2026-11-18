@@ -182,6 +182,7 @@ class Panel:
     height: float = 0
     offset: Point = (0, 0)
     boxes: list[Box] = field(default_factory=list)
+    annotations: list[dict] = field(default_factory=list)
 
 
 def _rotate(mol: Any, degrees: float) -> None:
@@ -859,6 +860,107 @@ def _points(points: list[Point]) -> str:
     return " ".join(f"{x:.2f},{y:.2f}" for x, y in points)
 
 
+def _text_width(text: str, size: float = 10) -> float:
+    # Reserve full ems for CJK, rather than clipping them at Latin glyph widths.
+    return sum(size if ord(c) > 0x2ff else size * .62 for c in text)
+
+
+def _annotation_lines(text: str, width: float = 110) -> list[str]:
+    lines, line = [], ""
+    for char in text:
+        if line and _text_width(line + char) > width:
+            lines.append(line)
+            line = ""
+        line += char
+    return [*lines, line] if line else lines
+
+
+def _annotate_panel(panel: Panel, display: dict) -> None:
+    """Reserve annotation bands before calculating the canvas, using chemical anchors.
+
+    Thin dashed leaders are annotation guides, never electron-flow arrows.
+    Molecular glyphs and formal charges remain exclusively RDKit's output.
+    """
+    core = union(panel.boxes)
+
+    def append(text, x, y, kind, anchor=None, lines=None):
+        lines = lines or [text]
+        width = max((_text_width(line) for line in lines), default=0)
+        box = (x - width / 2 - 2, y - 11, x + width / 2 + 2,
+               y + 13 * (len(lines) - 1) + 3)
+        panel.annotations.append(dict(lines=lines, x=x, y=y, kind=kind,
+                                      anchor=anchor, box=box))
+        panel.boxes.append(box)
+        return box
+
+    if display.get("show_partial_charges"):
+        for item in panel.spec.get("partial_charges", []):
+            atom_map = int(item["atom_map"])
+            matches = [m for m in panel.molecules if atom_map in m.maps and
+                       (item.get("molecule_index") is None or m.index == int(item["molecule_index"]))]
+            if len(matches) != 1:
+                panel.warnings.append(f"Partial charge at map {atom_map}: ambiguous or missing molecule.")
+                continue
+            molecule = matches[0]
+            point = molecule.point(atom_map)
+            text = str(item.get("label") or ("δ+" if item.get("sign", "+") == "+" else "δ−"))
+            obstacles = [m.ink for m in panel.molecules]
+            obstacles += [a["box"] for a in panel.annotations]
+            obstacles += [point_box(p, 3) for c in panel.curves for p in c.samples]
+            options = []
+            for radius in (20, 29, 38):
+                for dx, dy in ((.7, .7), (-.7, .7), (.7, -.7), (-.7, -.7), (0, 1), (0, -1)):
+                    x, y = point[0] + dx * radius, point[1] + dy * radius
+                    box = (x - _text_width(text)/2 - 2, y - 11, x + _text_width(text)/2 + 2, y + 3)
+                    overlaps = sum(not (box[2] < b[0]-2 or box[0] > b[2]+2 or
+                                          box[3] < b[1]-2 or box[1] > b[3]+2) for b in obstacles)
+                    options.append((overlaps * 1000 + radius, x, y))
+            _, x, y = min(options)
+            append(text, x, y, "partial-charge", point)
+
+    # Place all arrow descriptions above the molecular artwork. Packing avoids
+    # the common short-arrow/partial-charge collision at a carbonyl oxygen.
+    if display.get("show_arrow_labels"):
+        top = min(core[1], union(panel.boxes)[1]) - 15
+        bottom = max(core[3], union(panel.boxes)[3]) + 23
+        labels = {False: [], True: []}
+        for curve in panel.curves:
+            arrow = panel.spec.get("arrows", [])[curve.index - 1]
+            if arrow.get("label"):
+                below = sum(p[1] for p in curve.samples)/len(curve.samples) > (curve.source.point[1] + curve.target.point[1])/2
+                anchor = (max if below else min)(curve.samples, key=lambda p: p[1])
+                labels[below].append((anchor[0], str(arrow["label"]), anchor))
+        for below, group in labels.items():
+            previous_right = -math.inf
+            for desired_x, text, anchor in sorted(group):
+                width = _text_width(text)
+                x = max(desired_x, previous_right + 10 + width/2)
+                box = append(text, x, bottom if below else top,
+                             "arrow-label-bottom" if below else "arrow-label", anchor)
+                previous_right = box[2]
+
+    if display.get("show_molecule_labels"):
+        previous_right = -math.inf
+        baseline = max(core[3], union(panel.boxes)[3]) + 23
+        for molecule in sorted(panel.molecules, key=lambda m: m.ink[0]):
+            if not molecule.spec.get("label"):
+                continue
+            lines = _annotation_lines(str(molecule.spec["label"]))
+            width = max(_text_width(line) for line in lines)
+            desired_x = (molecule.ink[0] + molecule.ink[2])/2
+            x = max(desired_x, previous_right + 10 + width/2)
+            anchor = (desired_x, molecule.ink[3] + 3)
+            box = append("", x, baseline, "molecule-label", anchor, lines)
+            previous_right = box[2]
+
+    if display.get("show_notes"):
+        baseline = union(panel.boxes)[3] + 22
+        for note in panel.spec.get("notes", []):
+            lines = _annotation_lines(str(note), width=max(160, core[2] - core[0]))
+            append("", (core[0] + core[2])/2, baseline, "panel-note", lines=lines)
+            baseline += 13*len(lines) + 8
+
+
 def _panel_svg(panel: Panel, index: int, preset: dict, display: dict) -> str:
     parts = [
         f"<g id='panel-{index}' transform='translate({panel.offset[0]:.2f},{panel.offset[1]:.2f})'>"
@@ -911,6 +1013,14 @@ def _panel_svg(panel: Panel, index: int, preset: dict, display: dict) -> str:
         parts.append(
             f"<polyline class='electron-head {head_class}' points='{_points(curve.head)}'/>"
         )
+    for annotation in panel.annotations:
+        x, y, box = annotation["x"], annotation["y"], annotation["box"]
+        kind, anchor = annotation["kind"], annotation["anchor"]
+        if anchor and (kind != "partial-charge" or norm(sub((x, y), anchor)) > 24):
+            edge_y = box[3] + 2 if anchor[1] > (box[1] + box[3])/2 else box[1] - 2
+            parts.append(f"<path class='annotation-guide' d='M {x:.2f} {edge_y:.2f} L {anchor[0]:.2f} {anchor[1]:.2f}'/>")
+        for line_index, line in enumerate(annotation["lines"]):
+            parts.append(f"<text class='teaching-label {kind}' x='{x:.2f}' y='{y + line_index*13:.2f}' text-anchor='middle'>{escape(line)}</text>")
     parts.append("</g>")
     return "\n".join(parts)
 
@@ -926,6 +1036,7 @@ def compose_mechanism(spec: dict, display: dict) -> dict:
     prior = {}
     for p in spec.get("panels", []):
         panel = _panel(p, preset, prior)
+        _annotate_panel(panel, display)
         panels.append(panel)
         end = state_selection(p, "expected_state") or []
         prior = {
@@ -1000,6 +1111,9 @@ def compose_mechanism(spec: dict, display: dict) -> dict:
                     "target": curve.target.object_id(index),
                 }
             )
+        for annotation in panel.annotations:
+            elements.append(FigureElement("annotation", f"panel {index} {annotation['kind']}",
+                                          shift_box(annotation["box"], panel.offset)))
     audit = audit_figure(
         renderer="rdkit_compact_mechanism",
         width=width,
@@ -1021,7 +1135,9 @@ def compose_mechanism(spec: dict, display: dict) -> dict:
         "<style>.mech-arrow,.electron-head{fill:none;stroke:#111;stroke-width:1.15;stroke-linecap:round;stroke-linejoin:round}"
         ".reaction-head{fill:#111;stroke:none}"
         ".scheme-operator,.reaction-arrow{fill:none;stroke:#111;stroke-width:1.2}"
-        ".figure-title,.panel-title,.atom-map{font-family:Arial,Helvetica,sans-serif;fill:#111;font-weight:400}"
+        ".figure-title,.panel-title,.atom-map,.teaching-label{font-family:Arial,'Microsoft YaHei','Noto Sans CJK SC',sans-serif;fill:#111;font-weight:400}"
+        ".teaching-label{font-size:10px}.arrow-label,.arrow-label-bottom{fill:#155e75}.partial-charge{fill:#0b63ce}"
+        ".annotation-guide{fill:none;stroke:#9ca3af;stroke-width:.55;stroke-dasharray:2 2}.panel-note{fill:#555}"
         ".figure-title{font-size:14px}.panel-title{font-size:12px}.atom-map{font-size:9px;fill:#666}</style>\n"
         f"<rect width='{width:.2f}' height='{height:.2f}' fill='white'/>\n"
         + "\n".join(parts)

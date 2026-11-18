@@ -15,5 +15,6 @@
   "changes": "Only selected mechanism modules copied. Package __init__ replaced to avoid loading unrelated services. No third-party editor assets included.",
   "upstream_python_requirement": ">=3.12,<3.13",
   "local_validation_python": "3.14; this is a source subset, not installation of the upstream distribution.",
-  "reference_changes": "The copied mechanism-spec.md has two local documentation links adapted to the packaged examples and workflow."
+  "reference_changes": "The copied mechanism-spec.md has two local documentation links adapted to the packaged examples and workflow.",
+  "local_modifications_v1_3": "mechanism_scene.py: render supplied teaching annotations with anchored labels, CJK font fallback, and measured extents. Upstream chemistry and structure painter retained."
 }

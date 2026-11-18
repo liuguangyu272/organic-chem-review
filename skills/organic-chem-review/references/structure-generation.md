@@ -38,6 +38,10 @@ python scripts/render_structures.py --input work/molecules.json --output work/gr
 
 脚本的 JSON 记录含规范异构 SMILES、分子式、总电荷、手性中心及指定双键信息，便于助手核查；不代表已经自动核对题意。它只生成分子结构，不自动预测产物、添加反应条件或画机理弯箭。
 
+对结构上的反应位点做标注，可在 JSON 中使用带映射的 SMILES，并填 `atom_notes`（映射号到短标签）、`highlight_atom_maps`（需要高亮的映射号）、`highlight_bonds`（用两个映射号指定已有键）。例如 `{"smiles":"[CH3:1][CH:2]=[O:3]","label":"A","atom_notes":{"2":"E","3":"O"},"highlight_atom_maps":[2],"highlight_bonds":[[2,3]]}`。图中不显示映射号；校验记录保留它们。E 在正文解释为 electrophile（亲电位点）；不要默认中文 atomNote 在所有 RDKit 字体中可用，出现缺字时用简短字母并在图外解释。错误或不存在的锚点会阻止输出。
+
+这类高亮和原子短标签用于比较或题面，不能代替机理中的电子流。需要弯箭就调用机理工具；不要把高亮的一条键称为已画出断键过程。
+
 ## 反应机理与空间表示
 
 - 普通反应图：以分别核验的反应物、产物和已知条件构成方案；Reaction SMILES 可用于结构间交换或排布，但不包含完整电子流。含原子映射的反应输入先核对同号原子对应关系。

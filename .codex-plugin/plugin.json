@@ -1,0 +1,20 @@
+{
+  "name": "organic-chem-review",
+  "version": "1.3.0",
+  "description": "Slide-ordered organic chemistry review with annotated structures and electron-flow mechanisms.",
+  "author": {
+    "name": "liuguangyu272"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/liuguangyu272/organic-chem-review",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "有机化学复习（Chat）",
+    "shortDescription": "按 PPT 逐页复习，直接展示结构、反应位点和电子弯箭，逐题反馈。",
+    "longDescription": "在 Chat 或 Work 中直接调用的有机化学复习插件。教学规则及参考随插件提供；结构执行能力依据当前会话实际可用工具检查。",
+    "developerName": "liuguangyu272",
+    "defaultPrompt": [
+      "按我的 PPT 页序复习当前知识点，直接展示相关结构；机理在结构上标出电子弯箭、电荷与反应位点，然后只问一道题并等我回答。"
+    ]
+  }
+}

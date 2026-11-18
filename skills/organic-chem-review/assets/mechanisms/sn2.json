@@ -1,24 +1,29 @@
 {
   "spec_version": "2.1",
-  "title": "SN2 mechanism",
+  "title": "SN2：成键与离去同步发生",
   "journal_style": "acs",
-  "presentation_mode": "publication",
+  "presentation_mode": "teaching",
   "layout": {
     "columns": 1,
-    "panel_width": 760,
-    "panel_height": 188,
+    "panel_width": 1200,
+    "panel_height": 300,
     "top_margin": 10,
     "bottom_margin": 10,
     "align_atom_maps": true,
     "show_atom_maps": false,
-    "show_arrow_labels": false,
-    "show_molecule_labels": false,
+    "show_arrow_labels": true,
+    "show_molecule_labels": true,
     "show_notes": false,
     "show_footer": false,
-    "show_partial_charges": false,
+    "show_partial_charges": true,
     "lone_pair_display": "source_only",
-    "arrow_color": "#111",
-    "arrow_width": 1.8
+    "arrow_color": "#155e75",
+    "arrow_width": 1.8,
+    "show_title": true,
+    "show_subtitle": false,
+    "show_panel_titles": true,
+    "atom_colors": {},
+    "font_family": "Microsoft YaHei, Arial, sans-serif"
   },
   "evidence": [
     "Rule-template SN2 example for renderer validation; not literature proof."
@@ -26,7 +31,7 @@
   "uncertainty": "Educational validation fixture; human review is required for manuscript use.",
   "panels": [
     {
-      "title": "Backside attack",
+      "title": "一步协同：O 的孤对进攻碳，C–Br 键电子归 Br",
       "starting_state": {
         "role": "reactants",
         "molecule_indices": [
@@ -44,13 +49,13 @@
         "reaction_smiles": "[OH:1][CH3:2].[Br-:3]"
       },
       "reaction_arrow_after": 2,
-      "molecule_y_offset": 34,
-      "molecule_height_fraction": 0.58,
-      "operator_y_offset": 94,
+      "molecule_y_offset": 65,
+      "molecule_height_fraction": 0.48,
+      "operator_y_offset": 137,
       "molecules": [
         {
           "smiles": "[OH-:1]",
-          "label": "nucleophile",
+          "label": "亲核试剂",
           "side": "reactant",
           "atom_labels": {
             "1": "HO"
@@ -58,13 +63,13 @@
         },
         {
           "smiles": "[CH3:2][Br:3]",
-          "label": "alkyl bromide",
+          "label": "亲电碳 / 底物",
           "side": "reactant",
           "show_carbons": true
         },
         {
           "smiles": "[OH:1][CH3:2]",
-          "label": "methanol product",
+          "label": "新 C–O 键",
           "side": "product",
           "show_carbons": true,
           "flip_x": true,
@@ -74,7 +79,7 @@
         },
         {
           "smiles": "[Br-:3]",
-          "label": "leaving group",
+          "label": "离去基团",
           "side": "product"
         }
       ],
@@ -120,7 +125,7 @@
           "to_molecule_index": 2,
           "kind": "electron_pair",
           "electron_count": 2,
-          "label": "O lp → C",
+          "label": "① 孤对 → C",
           "curvature": -26,
           "start_gap": 2,
           "end_gap": 18
@@ -135,7 +140,7 @@
           "to_molecule_index": 2,
           "kind": "electron_pair",
           "electron_count": 2,
-          "label": "C–Br → Br",
+          "label": "② C–Br → Br",
           "curvature": -22,
           "start_gap": 1,
           "end_gap": 5.5
@@ -205,9 +210,7 @@
           "to": -1
         }
       ],
-      "notes": [
-        "Electron pair originates at hydroxide lone pair; leaving-group bond electrons end on bromide."
-      ]
+      "notes": []
     }
   ]
 }

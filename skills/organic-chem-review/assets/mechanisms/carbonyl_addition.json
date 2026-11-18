@@ -1,18 +1,27 @@
 {
   "spec_version": "2.1",
-  "title": "Cyanohydrin mechanism: two explicit steps",
+  "title": "羰基亲核加成：进攻与质子化分开画",
   "journal_style": "acs",
-  "presentation_mode": "publication",
+  "presentation_mode": "teaching",
   "layout": {
     "columns": 1,
     "panel_width": 1200,
-    "panel_height": 232,
+    "panel_height": 300,
     "top_margin": 10,
     "bottom_margin": 10,
     "show_panel_titles": true,
     "show_atom_maps": false,
     "align_atom_maps": false,
-    "show_footer": false
+    "show_footer": false,
+    "show_title": true,
+    "show_subtitle": false,
+    "show_molecule_labels": true,
+    "show_arrow_labels": true,
+    "show_notes": false,
+    "show_partial_charges": true,
+    "atom_colors": {},
+    "arrow_color": "#155e75",
+    "font_family": "Microsoft YaHei, Arial, sans-serif"
   },
   "evidence": [
     "GPT-6-authored educational fixture for software validation; not an experimental finding."
@@ -20,32 +29,37 @@
   "uncertainty": "A textbook mechanism hypothesis, with the HCN proton donor retained in both states. Conditions and selectivity are not validated.",
   "panels": [
     {
-      "title": "1. Cyanide addition to a carbonyl",
+      "title": "1. 亲核加成：形成 C–C 键，同时打开 C=O 的 π 键",
       "molecules": [
         {
           "smiles": "[C-:1]#[N:2]",
           "side": "reactant",
-          "show_carbons": true
+          "show_carbons": true,
+          "label": "亲核碳"
         },
         {
           "smiles": "[CH2:3]=[O:4]",
           "side": "reactant",
-          "show_carbons": true
+          "show_carbons": true,
+          "label": "亲电羰基"
         },
         {
           "smiles": "[H:5][C:6]#[N:7]",
           "side": "reactant",
-          "show_carbons": true
+          "show_carbons": true,
+          "label": "质子供体（本步未反应）"
         },
         {
           "smiles": "[C:1](#[N:2])[CH2:3][O-:4]",
           "side": "product",
-          "show_carbons": true
+          "show_carbons": true,
+          "label": "烷氧负离子"
         },
         {
           "smiles": "[H:5][C:6]#[N:7]",
           "side": "product",
-          "show_carbons": true
+          "show_carbons": true,
+          "label": "质子供体（保留）"
         }
       ],
       "starting_state": {
@@ -62,9 +76,9 @@
         ]
       },
       "reaction_arrow_after": 3,
-      "molecule_y_offset": 48,
-      "molecule_height_fraction": 0.6,
-      "operator_y_offset": 116,
+      "molecule_y_offset": 65,
+      "molecule_height_fraction": 0.48,
+      "operator_y_offset": 137,
       "arrows": [
         {
           "from_lone_pair_atom_map": 1,
@@ -73,7 +87,8 @@
           "to_molecule_index": 2,
           "kind": "electron_pair",
           "electron_count": 2,
-          "curvature": -32
+          "curvature": -32,
+          "label": "① 孤对 → 羰基 C"
         },
         {
           "from_bond": [
@@ -85,7 +100,8 @@
           "to_molecule_index": 2,
           "kind": "electron_pair",
           "electron_count": 2,
-          "curvature": 32
+          "curvature": 32,
+          "label": "② π(C=O) → O"
         }
       ],
       "graph_edits": [
@@ -126,30 +142,47 @@
           "count": 1,
           "visible_count": 1
         }
-      ]
+      ],
+      "partial_charges": [
+        {
+          "molecule_index": 2,
+          "atom_map": 3,
+          "label": "δ+"
+        },
+        {
+          "molecule_index": 2,
+          "atom_map": 4,
+          "label": "δ−"
+        }
+      ],
+      "notes": []
     },
     {
-      "title": "2. Alkoxide protonation by HCN",
+      "title": "2. 质子转移：O⁻ 得到 H，氰根再生",
       "molecules": [
         {
           "smiles": "[C:1](#[N:2])[CH2:3][O-:4]",
           "side": "reactant",
-          "show_carbons": true
+          "show_carbons": true,
+          "label": "烷氧负离子"
         },
         {
           "smiles": "[H:5][C:6]#[N:7]",
           "side": "reactant",
-          "show_carbons": true
+          "show_carbons": true,
+          "label": "质子供体"
         },
         {
           "smiles": "[C:1](#[N:2])[CH2:3][O:4][H:5]",
           "side": "product",
-          "show_carbons": true
+          "show_carbons": true,
+          "label": "氰醇产物"
         },
         {
           "smiles": "[C-:6]#[N:7]",
           "side": "product",
-          "show_carbons": true
+          "show_carbons": true,
+          "label": "再生的氰根"
         }
       ],
       "starting_state": {
@@ -165,9 +198,9 @@
         ]
       },
       "reaction_arrow_after": 2,
-      "molecule_y_offset": 48,
-      "molecule_height_fraction": 0.6,
-      "operator_y_offset": 116,
+      "molecule_y_offset": 65,
+      "molecule_height_fraction": 0.48,
+      "operator_y_offset": 137,
       "arrows": [
         {
           "from_lone_pair_atom_map": 4,
@@ -176,7 +209,8 @@
           "to_molecule_index": 2,
           "kind": "electron_pair",
           "electron_count": 2,
-          "curvature": -32
+          "curvature": -32,
+          "label": "① O 孤对 → H"
         },
         {
           "from_bond": [
@@ -188,7 +222,8 @@
           "to_molecule_index": 2,
           "kind": "electron_pair",
           "electron_count": 2,
-          "curvature": 28
+          "curvature": 28,
+          "label": "② H–C → C"
         }
       ],
       "graph_edits": [
@@ -227,7 +262,15 @@
           "count": 3,
           "visible_count": 1
         }
-      ]
+      ],
+      "partial_charges": [
+        {
+          "molecule_index": 2,
+          "atom_map": 5,
+          "label": "δ+"
+        }
+      ],
+      "notes": []
     }
   ]
 }
